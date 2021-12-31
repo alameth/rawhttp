@@ -8,10 +8,10 @@ import (
 
 type RawHTTP struct {
 	Header RawHeader
-	Body []string
+	Body   []string
 }
 
-func NewRawHTTP() (RawHTTP) {
+func NewRawHTTP() RawHTTP {
 	return RawHTTP{
 		Header: NewRawHeader(),
 		Body:   []string{},
@@ -20,10 +20,10 @@ func NewRawHTTP() (RawHTTP) {
 
 func (this *RawHTTP) Read(r io.Reader) error {
 	scanner := bufio.NewScanner(r)
-	if err := this.Header.ReadHeader(scanner); err != nil {
-		return err
-	} else if err == io.EOF {
+	if err := this.Header.ReadHeader(scanner); err == io.EOF {
 		return nil
+	} else if err != nil {
+		return err
 	}
 	for scanner.Scan() {
 		this.Body = append(this.Body, scanner.Text())

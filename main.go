@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"rawhttp/rawhttp"
 )
@@ -49,7 +50,7 @@ func main() {
 	request.Write(conn)
 	response := rawhttp.NewRawHeader()
 	err = response.ReadHeader(bufio.NewScanner(conn))
-	if err != nil {
+	if err != io.EOF && err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
