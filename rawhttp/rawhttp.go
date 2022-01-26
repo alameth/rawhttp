@@ -32,15 +32,17 @@ func (this *RawHTTP) Read(r io.Reader) error {
 }
 
 func (this *RawHTTP) Write(w io.Writer) error {
-	if err := this.Header.WriteHeader(w); err != nil {
+	bw := bufio.NewWriter(w)
+	if err := this.Header.WriteHeader(bw); err != nil {
 		return err
 	}
 	for _, line := range this.Body {
-		if n, err := fmt.Fprintf(w, "%s\r\n", line); err != nil {
+		if n, err := fmt.Fprintf(bw, "%s\r\n", line); err != nil {
 			return err
 		} else if n != len(line)+2 {
 			return fmt.Errorf("length error: tried %d, wrote %d", len(line), n)
 		}
 	}
+	bw.Flush()
 	return nil
 }
