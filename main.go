@@ -47,9 +47,12 @@ func main() {
 	}
 	defer conn.Close()
 
-	request.Write(conn)
+	if err := request.Write(conn); err != nil {
+		fmt.Fprintf(os.Stderr, "Error writing: %v\n", err)
+		os.Exit(1)
+	}
 	response := rawhttp.NewRawHeader()
-	err = response.ReadHeader(bufio.NewScanner(conn))
+	err = response.ReadHeader(bufio.NewReader(conn))
 	if err != io.EOF && err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
@@ -59,7 +62,7 @@ func main() {
 	} else {
 		w, err := os.Create(*optOutputFile)
 		if err != nil {
-			fmt.Fprintf(os.Stderr,"%v\n", err)
+			fmt.Fprintf(os.Stderr, "%v\n", err)
 			os.Exit(2)
 		}
 		defer w.Close()

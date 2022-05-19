@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"strings"
 )
 
 // The RawHeader object holds an HTTP Header as a slice of strings, indexed
@@ -26,18 +27,20 @@ func NewRawHeader() RawHeader {
 // ReadHeader reads an HTTP header from the specified reader stream. If a blank
 // line is read, it is discarded and the method returns with error set to nil.
 // If an EOF is reached, the method returns with error set to io.EOF.
-func (this *RawHeader) ReadHeader(scanner *bufio.Scanner) error {
-	for scanner.Scan() {
-		line := scanner.Text()
-		if line == "" {
+func (this *RawHeader) ReadHeader(r *bufio.Reader) error {
+	for {
+		line, err := r.ReadString('\n')
+		if err != nil {
+			if len(line) != 0 {
+				// Last line not newline terminated
+				return fmt.Errorf("unexpected EOF")
+			}
+			return err
+		}
+		if line == "\r\n" || line == "\n" {
 			return nil
 		}
-		this.Lines = append(this.Lines, line)
-	}
-	if err := scanner.Err(); err != nil {
-		return err
-	} else {
-		return io.EOF
+		this.Lines = append(this.Lines, strings.TrimRight(line, "\r\n"))
 	}
 }
 
@@ -73,7 +76,7 @@ func (this RawHeader) WriteHeader(w io.Writer) error {
 			return fmt.Errorf("length error: tried %d, wrote %d", len(line), n)
 		}
 	}
-	w.Write([]byte("\r\n"))
+	_, _ = w.Write([]byte("\r\n"))
 	return nil
 }
 

@@ -19,9 +19,12 @@ response; interpreting the response is the sole responsibility of the caller.
 With no options, **rawhttp** acts as follows:
 - Read a complete HTTP Request (header and body) from stdin;
 - Connect to the specified server on port 80;
-- Write the Request to the server, with end of line normalized to CRLF;
+- Write the Request to the server;
 - Read the response from the server;
-- Write the response to stdout.
+- Write the response header to stdout.
+
+The Request header is normalized to CRLF line termination before writing,
+but the body is unchanged in order to allow binary post data.
 
 Options are available to use TLS (HTTPS), read the request from one or more
 files, set the port number, and to automate some simple elements in the Request

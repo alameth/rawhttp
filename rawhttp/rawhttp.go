@@ -8,7 +8,7 @@ import (
 
 type RawHTTP struct {
 	Header RawHeader
-	Body   []string
+	Body   RawBody
 }
 
 func NewRawHTTP() RawHTTP {
@@ -19,16 +19,16 @@ func NewRawHTTP() RawHTTP {
 }
 
 func (this *RawHTTP) Read(r io.Reader) error {
-	scanner := bufio.NewScanner(r)
-	if err := this.Header.ReadHeader(scanner); err == io.EOF {
+	br := bufio.NewReader(r)
+	if err := this.Header.ReadHeader(br); err == io.EOF {
 		return nil
 	} else if err != nil {
 		return err
 	}
-	for scanner.Scan() {
-		this.Body = append(this.Body, scanner.Text())
+	if err := this.Body.ReadBody(br); err != nil && err != io.EOF {
+		return err
 	}
-	return scanner.Err()
+	return nil
 }
 
 func (this *RawHTTP) Write(w io.Writer) error {
@@ -37,9 +37,9 @@ func (this *RawHTTP) Write(w io.Writer) error {
 		return err
 	}
 	for _, line := range this.Body {
-		if n, err := fmt.Fprintf(bw, "%s\r\n", line); err != nil {
+		if n, err := bw.WriteString(line); err != nil {
 			return err
-		} else if n != len(line)+2 {
+		} else if n != len(line) {
 			return fmt.Errorf("length error: tried %d, wrote %d", len(line), n)
 		}
 	}

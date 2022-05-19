@@ -17,11 +17,11 @@ func TestNewRawHeader(t *testing.T) {
 
 func TestRawHeader_ReadHeader_WithBody(t *testing.T) {
 	rh := NewRawHeader()
-	sc := bufio.NewScanner(strings.NewReader(`GET /echoback HTTP/1.1
+	rb := bufio.NewReader(strings.NewReader(`GET /echoback HTTP/1.1
 Host: example.com
 
 `))
-	if err := rh.ReadHeader(sc); err != nil {
+	if err := rh.ReadHeader(rb); err != nil {
 		t.Fatalf("unexpected read error: %v", err)
 	}
 	if len(rh.Lines) != 2 {
@@ -31,10 +31,10 @@ Host: example.com
 
 func TestRawHeader_ReadHeader_NoBody(t *testing.T) {
 	rh := NewRawHeader()
-	sc := bufio.NewScanner(strings.NewReader(`GET /echoback HTTP/1.1
+	rb := bufio.NewReader(strings.NewReader(`GET /echoback HTTP/1.1
 Host: example.com
 `))
-	if err := rh.ReadHeader(sc); err != io.EOF {
+	if err := rh.ReadHeader(rb); err != io.EOF {
 		t.Fatalf("expected EOF; got %v", err)
 	}
 	if len(rh.Lines) != 2 {
